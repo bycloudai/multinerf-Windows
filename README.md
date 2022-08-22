@@ -32,6 +32,7 @@ conda install pip
 pip install --upgrade pip
 
 # Install requirements.
+pip install six
 pip install -r requirements.txt
 
 # Manually install rmbrualla's `pycolmap` (don't use pip's! It's different).
