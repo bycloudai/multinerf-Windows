@@ -27,7 +27,7 @@ cd multinerf
 conda create --name multinerf python=3.9
 conda activate multinerf
 
-# Prepare pip.
+# Prepare pip. Should come together in Conda
 conda install pip
 pip install --upgrade pip
 
