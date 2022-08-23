@@ -44,6 +44,7 @@ conda create --name multinerf python=3.9 && conda activate multinerf
 pip install jax[cuda111]==0.3.14 -f https://whls.blob.core.windows.net/unstable/index.html --use-deprecated legacy-resolver
 pip install https://whls.blob.core.windows.net/unstable/cuda111/jaxlib-0.3.14+cuda11.cudnn82-cp39-none-win_amd64.whl
 pip install -r requirements.txt
+git clone https://github.com/rmbrualla/pycolmap.git ./internal/pycolmap
 ```
 #### Confirm that all the unit tests pass
 ```
@@ -75,11 +76,11 @@ Summary: first, calculate poses. Second, train MultiNeRF. Third, render a result
 
 1. Calculating poses (using COLMAP):
 ```
-scripts/local_colmap_and_resize.sh <data_dir>
+scripts\local_colmap_and_resize.bat <data_dir>
 ```
-eg. `scripts/local_colmap_and_resize.sh trash`
+eg. `scripts\local_colmap_and_resize.bat trash`
 
-If your scene has > 500 images, then you might need to run this.
+If your scene has > 500 images, then it is suggested that you run the following section.
 
 First you need to download [vocab_tree_flickr100K_words32K](https://demuc.de/colmap/#download), scroll down and download the 32K one. For `<VOCABTREE_PATH>`, add the path of it, eg. `C:\downloads\...\vocab_tree_flickr100K_words32K.bin`
 ```
@@ -88,7 +89,7 @@ colmap vocab_tree_matcher --database_path %DATASET_PATH%\database.db --VocabTree
 
 2. Training MultiNeRF:
 ```
-python train --gin_configs=configs\360.gin --gin_bindings="Config.data_dir = %DATA_DIR%" --gin_bindings="Config.checkpoint_dir = %DATA_DIR%\checkpoints" --logtostderr
+python -m train --gin_configs=configs\360.gin --gin_bindings="Config.data_dir = '%DATA_DIR%'" --gin_bindings="Config.checkpoint_dir = '%DATA_DIR%\checkpoints'" --logtostderr
 ```
 3. Rendering MultiNeRF:
 ```
