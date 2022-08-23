@@ -16,31 +16,40 @@ This implementation is written in [JAX](https://github.com/google/jax), and
 is a fork of [mip-NeRF](https://github.com/google/mipnerf).
 This is research code, and should be treated accordingly.
 
-## Setup
+### This is a fork edit dedicated for windows installation tutorial, no further updates will be made on the codes
 
+Special requirements for Windows:
+- Requires CUDA 11.1 for JAX
+
+## Setup
+Install [COLMAP](https://github.com/colmap/colmap/releases/tag/3.7), I used ver 3.7
+
+Add it to your system environment variables at Environment Variables > System Variables Path > Edit environment variable
+
+![image](https://user-images.githubusercontent.com/29135514/151633058-e45f9220-c417-4249-aff3-09d29c1a4e9b.png)
+
+Sometimes you need to restart your PC to register the COLMAP call in a prompt. Test if you need to by opening any CMD and enter `colmap help`, if it says `'colmap' is not recognized as an internal or external command, operable program or batch file.` then you would need to restart your PC. 
+
+### Setup up conda environment
+If you don't have you don't have you can get it [here](https://www.anaconda.com/products/individual)
+
+#### Clone the repo and cd into the root folder
 ```
-# Clone the repo.
 git clone https://github.com/google-research/multinerf.git
 cd multinerf
-
-# Make a conda environment.
-conda create --name multinerf python=3.9
-conda activate multinerf
-
-# Prepare pip. Should come together in Conda
-conda install pip
-pip install --upgrade pip
-
-# Install requirements.
-pip install six
-pip install -r requirements.txt
-
-# Manually install rmbrualla's `pycolmap` (don't use pip's! It's different).
-git clone https://github.com/rmbrualla/pycolmap.git ./internal/pycolmap
-
-# Confirm that all the unit tests pass.
-./scripts/run_all_unit_tests.sh
 ```
+#### Make a conda environment
+```
+conda create --name multinerf python=3.9 && conda activate multinerf
+pip install jax[cuda111]==0.3.14 -f https://whls.blob.core.windows.net/unstable/index.html --use-deprecated legacy-resolver
+pip install https://whls.blob.core.windows.net/unstable/cuda111/jaxlib-0.3.14+cuda11.cudnn82-cp39-none-win_amd64.whl
+pip install -r requirements.txt
+```
+#### Confirm that all the unit tests pass
+```
+scripts\run_all_unit_tests.bat
+```
+
 You'll probably also need to update your JAX installation to support GPUs or TPUs.
 
 ## Running
@@ -66,28 +75,24 @@ Summary: first, calculate poses. Second, train MultiNeRF. Third, render a result
 
 1. Calculating poses (using COLMAP):
 ```
-DATA_DIR=my_dataset_dir
-bash scripts/local_colmap_and_resize.sh ${DATA_DIR}
+scripts/local_colmap_and_resize.sh <data_dir>
 ```
+eg. `scripts/local_colmap_and_resize.sh trash`
+
+If your scene has > 500 images, then you might need to run this.
+
+First you need to download [vocab_tree_flickr100K_words32K](https://demuc.de/colmap/#download), scroll down and download the 32K one. For `<VOCABTREE_PATH>`, add the path of it, eg. `C:\downloads\...\vocab_tree_flickr100K_words32K.bin`
+```
+colmap vocab_tree_matcher --database_path %DATASET_PATH%\database.db --VocabTreeMatching.vocab_tree_path <VOCABTREE_PATH> --SiftMatching.use_gpu 1
+```
+
 2. Training MultiNeRF:
 ```
-python -m train \
-  --gin_configs=configs/360.gin \
-  --gin_bindings="Config.data_dir = '${DATA_DIR}'" \
-  --gin_bindings="Config.checkpoint_dir = '${DATA_DIR}/checkpoints'" \
-  --logtostderr
+python train --gin_configs=configs\360.gin --gin_bindings="Config.data_dir = %DATA_DIR%" --gin_bindings="Config.checkpoint_dir = %DATA_DIR%\checkpoints" --logtostderr
 ```
 3. Rendering MultiNeRF:
 ```
-python -m render \
-  --gin_configs=configs/360.gin \
-  --gin_bindings="Config.data_dir = '${DATA_DIR}'" \
-  --gin_bindings="Config.checkpoint_dir = '${DATA_DIR}/checkpoints'" \
-  --gin_bindings="Config.render_dir = '${DATA_DIR}/render'" \
-  --gin_bindings="Config.render_path = True" \
-  --gin_bindings="Config.render_path_frames = 480" \
-  --gin_bindings="Config.render_video_fps = 60" \
-  --logtostderr
+python -m render --gin_configs=configs\360.gin --gin_bindings="Config.data_dir = %DATA_DIR%" --gin_bindings="Config.checkpoint_dir = %DATA_DIR%\checkpoints" --gin_bindings="Config.render_dir = %DATA_DIR%\render" --gin_bindings="Config.render_path = True" --gin_bindings="Config.render_path_frames = 480" --gin_bindings="Config.render_video_fps = 60" --logtostderr
 ```
 Your output video should now exist in the directory `my_dataset_dir/render/`.
 
